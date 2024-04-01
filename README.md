@@ -1,6 +1,7 @@
 # e_mess
 
-The android application for the e-Mess POS systems.
+This repository contains the Android application for the e-Mess POS systems.
+The application is built using the Flutter framework therefore it is compatible with multiple platforms.
 
 ## Getting Started
 
