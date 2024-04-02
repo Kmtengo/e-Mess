@@ -7,7 +7,7 @@ The application is built using the Flutter framework therefore it is compatible 
 ## Getting Started
 
 This project contains Flutter applications for various platforms but the focus for this project was on Android.
-
+This application will be installed and used on self service POS systems running the Android OS.
 A few resources to get you started if this is your first Flutter project:
 
 - [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
