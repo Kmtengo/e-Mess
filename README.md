@@ -6,7 +6,7 @@ The application is built using the Flutter framework therefore it is compatible 
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project contains Flutter applications for various platforms but the focus for this project was on Android.
 
 A few resources to get you started if this is your first Flutter project:
 
