@@ -13,11 +13,24 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              );
+            },
+          ),
           title: const Text("e-Mess"),
           centerTitle: true,
           backgroundColor: Colors.tealAccent,
         ),
-        body: Container(),
+        body: Container(
+          color: Colors.white,
+        ),
       ),
     );
   }
