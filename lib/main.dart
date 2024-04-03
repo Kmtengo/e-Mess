@@ -31,6 +31,20 @@ class MyApp extends StatelessWidget {
         body: Container(
           color: Colors.white,
         ),
+        drawer: Drawer(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text('This is the Drawer'),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text('Close Drawer'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
