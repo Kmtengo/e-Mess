@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
           backgroundColor: Colors.tealAccent,
         ),
+        body: Container(),
       ),
     );
   }
