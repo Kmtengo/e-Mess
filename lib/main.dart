@@ -13,50 +13,79 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(
-                  Icons.account_circle_rounded,
-                  color: Colors.deepOrangeAccent,
-                  size: 30.0,
+      home: Builder(
+          builder: (context) => Scaffold(
+                appBar: AppBar(
+                  leading: Builder(
+                    builder: (BuildContext context) {
+                      return IconButton(
+                        icon: const Icon(
+                          Icons.account_circle_rounded,
+                          color: Colors.deepOrangeAccent,
+                          size: 30.0,
+                        ),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                        tooltip: MaterialLocalizations.of(context)
+                            .openAppDrawerTooltip,
+                      );
+                    },
+                  ),
+                  title: const Text(
+                    "e-Mess",
+                    style: TextStyle(
+                      color: Colors.deepOrangeAccent,
+                      fontSize: 30.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  centerTitle: true,
+                  backgroundColor: Colors.tealAccent,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.qr_code_scanner_rounded,
+                          color: Colors.deepOrangeAccent, size: 30.0),
+                      tooltip: 'scan QR Code',
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Scan QR Code'),
+                              content: const Text(
+                                  'You have selected to scan a QR code.'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    )
+                  ],
                 ),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-              );
-            },
-          ),
-          title: const Text(
-            "e-Mess",
-            style: TextStyle(
-              color: Colors.deepOrangeAccent,
-              fontSize: 30.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.tealAccent,
-        ),
-        body: SafeArea(
-          child: Container(
-            color: Colors.white,
-          ),
-        ),
-        drawer: const Drawer(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('This is the Drawer'),
-              ],
-            ),
-          ),
-        ),
-      ),
+                body: const SafeArea(
+                  child: Column(
+                    children: [],
+                  ),
+                ),
+                drawer: const Drawer(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text('This is the Drawer'),
+                      ],
+                    ),
+                  ),
+                ),
+              )),
     );
   }
 }
