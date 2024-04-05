@@ -28,8 +28,10 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
           backgroundColor: Colors.tealAccent,
         ),
-        body: Container(
-          color: Colors.white,
+        body: SafeArea(
+          child: Container(
+            color: Colors.white,
+          ),
         ),
         drawer: const Drawer(
           child: Center(
