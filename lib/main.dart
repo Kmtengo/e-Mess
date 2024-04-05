@@ -18,7 +18,11 @@ class MyApp extends StatelessWidget {
           leading: Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: const Icon(Icons.menu),
+                icon: const Icon(
+                  Icons.account_circle_rounded,
+                  color: Colors.deepOrangeAccent,
+                  size: 30.0,
+                ),
                 onPressed: () {
                   Scaffold.of(context).openDrawer();
                 },
