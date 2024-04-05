@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 // The main function is the starting point for all our Flutter apps.
@@ -24,7 +26,14 @@ class MyApp extends StatelessWidget {
               );
             },
           ),
-          title: const Text("e-Mess"),
+          title: const Text(
+            "e-Mess",
+            style: TextStyle(
+              color: Colors.deepOrangeAccent,
+              fontSize: 30.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           centerTitle: true,
           backgroundColor: Colors.tealAccent,
         ),
