@@ -1,6 +1,8 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 // The main function is the starting point for all our Flutter apps.
 void main() {
@@ -71,9 +73,20 @@ class MyApp extends StatelessWidget {
                     )
                   ],
                 ),
-                body: const SafeArea(
+                body: SafeArea(
                   child: Column(
-                    children: [],
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 20.0, horizontal: 10.0),
+                        child: LinearProgressIndicator(
+                          value: 0.25,
+                          minHeight: 8.0,
+                          color: Colors.deepOrange,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      )
+                    ],
                   ),
                 ),
                 drawer: const Drawer(
