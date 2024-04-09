@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
                   title: const Text(
                     "e-Mess",
                     style: TextStyle(
+                      fontFamily: 'BungeeSpice',
                       color: Colors.deepOrangeAccent,
                       fontSize: 30.0,
                       fontWeight: FontWeight.bold,
