@@ -9,8 +9,30 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+        length: 4,
+        vsync:
+            this); // You can change the length as per the number of tabs you have
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +60,7 @@ class MyApp extends StatelessWidget {
                     "e-Mess",
                     style: TextStyle(
                       fontFamily: 'BungeeSpice',
-                      color: Colors.deepOrangeAccent,
+                      color: Colors.deepOrange,
                       fontSize: 30.0,
                       fontWeight: FontWeight.bold,
                     ),
@@ -48,7 +70,7 @@ class MyApp extends StatelessWidget {
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.qr_code_scanner_rounded,
-                          color: Colors.deepOrangeAccent, size: 30.0),
+                          color: Colors.deepOrange, size: 30.0),
                       tooltip: 'scan QR Code',
                       onPressed: () {
                         showDialog(
@@ -85,6 +107,20 @@ class MyApp extends StatelessWidget {
                           color: Colors.deepOrange,
                           borderRadius: BorderRadius.circular(10.0),
                         ),
+                      ),
+                      TabBar(
+                        indicatorColor: Colors.teal,
+                        labelColor: Colors.deepOrange,
+                        labelStyle: const TextStyle(
+                            fontFamily: 'TiltNeon',
+                            fontWeight: FontWeight.bold),
+                        controller: _tabController,
+                        tabs: const [
+                          Tab(text: 'Breakfast'),
+                          Tab(text: '  Lunch  '),
+                          Tab(text: '4pm Tea'),
+                          Tab(text: 'Supper')
+                        ],
                       )
                     ],
                   ),
