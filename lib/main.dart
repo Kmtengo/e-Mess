@@ -707,7 +707,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh. 40',
+                                                'Ksh. 35',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -772,7 +772,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh. 45',
+                                                'Ksh. 25',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -948,7 +948,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Sukuma',
+                                                  'Sukumawiki',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1536,7 +1536,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/ugali.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1551,7 +1551,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Ugali',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1570,7 +1570,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 15',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1601,7 +1601,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/rice.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1616,7 +1616,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Rice',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1635,7 +1635,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 30',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1666,7 +1666,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/chapati.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1681,7 +1681,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Chapati',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1700,7 +1700,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 20',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1731,7 +1731,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/madondo.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1746,7 +1746,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Madondo',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1765,7 +1765,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 25',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1796,7 +1796,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/ndengu.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1811,7 +1811,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Ndengu',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1830,7 +1830,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 35',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1861,7 +1861,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/cabbage.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1876,7 +1876,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Cabbage',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1895,7 +1895,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 20',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1926,7 +1926,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/sukuma.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -1941,7 +1941,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Sukumawiki',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -1960,7 +1960,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 30',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -1991,7 +1991,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/beef.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -2006,7 +2006,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Beef Stew',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -2025,7 +2025,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 70',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
@@ -2056,7 +2056,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/tea.jpg',
+                                                'images/matumbo1.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -2071,7 +2071,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                                 padding: EdgeInsets.fromLTRB(
                                                     8.0, 0.0, 16.0, 0.0),
                                                 child: Text(
-                                                  'Tea',
+                                                  'Matumbo',
                                                   style: TextStyle(
                                                     fontFamily: 'DancingScript',
                                                     fontWeight: FontWeight.w900,
@@ -2090,7 +2090,72 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               padding: EdgeInsets.fromLTRB(
                                                   8.0, 0.0, 16.0, 0.0),
                                               child: Text(
-                                                'Ksh.15.0',
+                                                'Ksh. 50',
+                                                style: TextStyle(
+                                                    fontFamily: 'NunitoSans',
+                                                    color: Colors.deepOrange,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 8.5),
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {},
+                                  style: TextButton.styleFrom(
+                                    padding:
+                                        EdgeInsets.zero, // Set padding to zero
+                                  ),
+                                  child: Card(
+                                    child: Column(
+                                      children: [
+                                        SizedBox(
+                                          height: 90.0,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(3.0),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(15.0),
+                                              child: Image.asset(
+                                                'images/pilau1.png',
+                                                height: 30.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const Expanded(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding: EdgeInsets.fromLTRB(
+                                                    8.0, 0.0, 16.0, 0.0),
+                                                child: Text(
+                                                  'Pilau',
+                                                  style: TextStyle(
+                                                    fontFamily: 'DancingScript',
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: 18.0,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  8.0, 0.0, 16.0, 0.0),
+                                              child: Text(
+                                                'Ksh. 60',
                                                 style: TextStyle(
                                                     fontFamily: 'NunitoSans',
                                                     color: Colors.deepOrange,
