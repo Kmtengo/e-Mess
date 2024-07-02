@@ -273,7 +273,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/eggs.jpg',
+                                                'images/eggs.png',
                                                 height: 30.0,
                                               ),
                                             ),
@@ -468,7 +468,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/toast.jpg',
+                                                'images/toast.png',
                                                 height: 30.0,
                                               ),
                                             ),
