@@ -122,6 +122,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                         child: TabBarView(
                           controller: _tabController,
                           children: <Widget>[
+                            // Breakfast GridView/Tab
                             GridView.count(
                               crossAxisCount: 3,
                               mainAxisSpacing: 5.0,
@@ -518,6 +519,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                 ),
                               ],
                             ),
+                            // Lunch GridView/Tab
                             GridView.count(
                               crossAxisCount: 3,
                               mainAxisSpacing: 10.0,
@@ -1110,6 +1112,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                 )
                               ],
                             ),
+                            // 4pm Tea GridView/Tab
                             GridView.count(
                               crossAxisCount: 3,
                               mainAxisSpacing: 10.0,
@@ -1702,6 +1705,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                 )
                               ],
                             ),
+                            // Supper GridView/Tab
                             GridView.count(
                               crossAxisCount: 3,
                               mainAxisSpacing: 10.0,
