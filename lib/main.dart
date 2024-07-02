@@ -403,7 +403,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                                               borderRadius:
                                                   BorderRadius.circular(15.0),
                                               child: Image.asset(
-                                                'images/coffee1.jpg',
+                                                'images/coffee.png',
                                                 height: 30.0,
                                               ),
                                             ),
