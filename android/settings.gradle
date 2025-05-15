@@ -1,26 +1,37 @@
 pluginManagement {
-    def flutterSdkPath = {
-        def properties = new Properties()
-        file("local.properties").withInputStream { properties.load(it) }
-        def flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert flutterSdkPath != null, "flutter.sdk not set in local.properties"
-        return flutterSdkPath
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
     }
-    settings.ext.flutterSdkPath = flutterSdkPath()
 
-    includeBuild("${settings.ext.flutterSdkPath}/packages/flutter_tools/gradle")
+    // This is the new way to load the Flutter Gradle Plugin
+    includeBuild(providers.gradleProperty("flutter.sdk").get() + "/packages/flutter_tools/gradle") {
+        name = "flutter_tools"
+    }
+}
 
+// This needs to be at the top level
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
 }
 
 plugins {
-    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "7.3.0" apply false
-    id "org.jetbrains.kotlin.android" version "1.7.10" apply false
+    id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
 }
 
 include ":app"
+
+// Load properties from local.properties file
+def flutterProjectRoot = rootProject.projectDir.parentFile
+def localProperties = new Properties()
+def localPropertiesFile = new File(flutterProjectRoot, "local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}

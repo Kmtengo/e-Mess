@@ -1,123 +1,127 @@
 import 'package:flutter/material.dart';
+import 'models/meal.dart';
+import 'checkout.dart';
 
-// The main function is the starting point for all our Flutter apps.
-void main() {
-  runApp(const MyApp());
+class AuthenticationPage extends StatefulWidget {
+  final List<Meal> selectedMeals;
+  final double totalAmount;
+
+  const AuthenticationPage({
+    Key? key,
+    required this.selectedMeals,
+    required this.totalAmount,
+  }) : super(key: key);
+
+  @override
+  _AuthenticationPageState createState() => _AuthenticationPageState();
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class _AuthenticationPageState extends State<AuthenticationPage> {
+  bool _isAuthenticating = false;
+  bool _hasError = false;
 
-  @override
-  _MyAppState createState() => _MyAppState();
-}
+  Future<void> _authenticateUser() async {
+    setState(() {
+      _isAuthenticating = true;
+      _hasError = false;
+    });
 
-class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(
-        length: 4,
-        vsync:
-            this); // You can change the length as per the number of tabs you have
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    try {
+      // Simulate fingerprint authentication
+      await Future.delayed(Duration(seconds: 2));
+      
+      // TODO: Add actual fingerprint authentication logic here
+      
+      // If authentication is successful, navigate to checkout
+      if (!mounted) return;
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CheckoutPage(
+            selectedMeals: widget.selectedMeals,
+            totalAmount: widget.totalAmount,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _hasError = true;
+        _isAuthenticating = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Builder(
-          builder: (context) => Scaffold(
-                appBar: AppBar(
-                  leading: Builder(
-                    builder: (BuildContext context) {
-                      return IconButton(
-                        icon: const Icon(
-                          Icons.account_circle_rounded,
-                          color: Colors.deepOrangeAccent,
-                          size: 30.0,
-                        ),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
-                        tooltip: MaterialLocalizations.of(context)
-                            .openAppDrawerTooltip,
-                      );
-                    },
-                  ),
-                  title: const Text(
-                    "e-Mess",
-                    style: TextStyle(
-                      fontFamily: 'BungeeSpice',
-                      color: Colors.deepOrange,
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.bold,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Authentication Required'),
+        backgroundColor: Colors.green,
+      ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.fingerprint,
+                size: 120,
+                color: _hasError ? Colors.red : Colors.green,
+              ),
+              SizedBox(height: 24),
+              Text(
+                'Place your finger on the scanner',
+                style: Theme.of(context).textTheme.titleLarge,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Total Amount to be Deducted: Ksh ${widget.totalAmount.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              if (_isAuthenticating)
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                )
+              else
+                ElevatedButton(
+                  onPressed: _authenticateUser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  centerTitle: true,
-                  backgroundColor: Colors.tealAccent,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.qr_code_scanner_rounded,
-                          color: Colors.deepOrange, size: 30.0),
-                      tooltip: 'scan QR Code',
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Scan QR Code'),
-                              content: const Text(
-                                  'You have selected to scan a QR code.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    )
-                  ],
-                ),
-                body: SafeArea(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20.0, horizontal: 10.0),
-                        child: LinearProgressIndicator(
-                          value: 0.75,
-                          minHeight: 8.0,
-                          color: Colors.deepOrange,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Authenticate',
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
-                drawer: const Drawer(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text('This is the Drawer'),
-                      ],
-                    ),
+              if (_hasError) ...[
+                SizedBox(height: 16),
+                Text(
+                  'Authentication failed. Please try again.',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-              )),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
