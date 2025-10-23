@@ -4,6 +4,26 @@ This repository contains the Android application for the e-Mess POS systems.
 
 The application is built using the Flutter framework therefore it is compatible with multiple platforms.
 
+## Backend Implementation Status
+
+**This application currently does NOT have a backend implementation.**
+
+The app is a frontend-only Flutter application with:
+- Hardcoded menu items and prices displayed in the UI
+- No API integration or network communication
+- No database connectivity
+- No authentication or user management backend
+- No order processing or payment backend services
+
+For a complete POS system, a backend would need to be developed separately to handle:
+- User authentication and authorization
+- Menu management (CRUD operations for food items)
+- Order processing and tracking
+- Payment processing
+- Transaction history
+- User account management
+- Inventory management
+
 ## Getting Started
 
 This project contains Flutter applications for various platforms but the focus for this project was on Android.
