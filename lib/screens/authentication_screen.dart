@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'checkout_screen.dart';
+import '../checkout.dart';
 
 class AuthenticationScreen extends StatelessWidget {
   const AuthenticationScreen({super.key});
@@ -22,7 +22,8 @@ class AuthenticationScreen extends StatelessWidget {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
             child: LinearProgressIndicator(
               value: 0.75,
               minHeight: 8.0,
@@ -63,7 +64,10 @@ class AuthenticationScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const CheckoutScreen(),
+                          builder: (context) => const CheckoutPage(
+                            selectedMeals: [],
+                            totalAmount: 0.0,
+                          ),
                         ),
                       );
                     },

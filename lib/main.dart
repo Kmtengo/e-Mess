@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.teal,
         fontFamily: 'NunitoSans',
       ),
-      home: const HomeScreen(),
+      initialRoute: AppRoutes.splash,
       routes: AppRoutes.getRoutes(),
     );
   }
