@@ -594,31 +594,37 @@ Icon(
 
 ## Accessibility
 
+> **Note**: This section documents the current implementation and identifies areas for potential accessibility improvements. These are design system observations, not requirements.
+
 ### Color Contrast
-- Ensure sufficient contrast between Deep Orange text and white/teal backgrounds
-- Primary color combinations meet WCAG AA standards:
-  - Deep Orange (#FF5722) on White background ✓
-  - Deep Orange (#FF5722) on Teal Accent background (verify in production)
+- Deep Orange (#FF5722) on White background provides good contrast (contrast ratio: ~4.7:1, meets WCAG AA for normal text)
+- Deep Orange (#FF5722) on Teal Accent (#64FFDA) background should be tested for compliance
+- **Action Item**: Verify all color combinations meet WCAG AA standards (4.5:1 for normal text, 3:1 for large text)
 
 ### Touch Targets
-- All interactive elements (buttons, cards) meet minimum 48dp touch target
+- All interactive elements (buttons, cards) meet minimum 48dp touch target recommendation
 - Icons sized at 30.0 dp with adequate padding
+- Card buttons use `EdgeInsets.zero` padding but the card itself provides sufficient touch area
 
 ### Text Readability
-- Minimum font size: 8.5 dp (may need review for accessibility compliance)
-- Primary content uses 18.0 dp (DancingScript) which is readable
-- High contrast between text and backgrounds
+- **Current Implementation**: Price labels use 8.5 dp font size (below recommended minimum)
+- **WCAG Compliance**: Minimum recommended font size is 12 dp (approximately 9pt at standard DPI)
+- Primary content uses 18.0 dp (DancingScript) which exceeds accessibility requirements
+- High contrast maintained between text and backgrounds
+- **Priority Recommendation**: Increase price font size from 8.5 dp to minimum 12.0 dp for WCAG compliance
 
 ### Tooltips
 - Icons include descriptive tooltips (e.g., "scan QR Code")
 - Helps users understand icon functions
+- Consider adding tooltips to all interactive elements
 
-### Recommendations
-1. Consider increasing price font size from 8.5 to at least 12.0 for better readability
-2. Test color combinations with accessibility tools
-3. Ensure all interactive elements have proper semantic labels
-4. Consider adding support for system font scaling
-5. Test with screen readers for proper navigation flow
+### Accessibility Improvement Roadmap
+1. **High Priority**: Increase price font size from 8.5 dp to 12.0 dp minimum for WCAG AA compliance
+2. **High Priority**: Test and document actual contrast ratios for all color combinations used in the app
+3. **Medium Priority**: Ensure all interactive elements have proper semantic labels for screen readers
+4. **Medium Priority**: Add support for system font scaling to respect user preferences
+5. **Medium Priority**: Conduct screen reader testing for proper navigation flow and announcements
+6. **Low Priority**: Consider alternative visual indicators beyond color for important information
 
 ---
 
