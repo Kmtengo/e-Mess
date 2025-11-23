@@ -3,9 +3,8 @@ node_modules/
 **/node_modules/
 
 # Next.js
-web-app/.next/
-web-app/out/
-web-app/build/
+.next/
+out/
 
 # Production
 dist/

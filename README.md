@@ -121,61 +121,56 @@ System administrator tools for monitoring and management:
    cd e-Mess
    ```
 
-2. **Navigate to the web app directory**:
-   ```bash
-   cd web-app
-   ```
-
-3. **Install dependencies**:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-4. **Configure environment variables**:
-   Copy the `.env.local` file and update with your backend API URL:
+3. **Configure environment variables**:
+   Edit the `.env.local` file and update with your backend API URL:
    ```bash
    NEXT_PUBLIC_API_URL=http://localhost:3000/api
    NEXT_PUBLIC_APP_NAME=e-Mess Management
    ```
 
-5. **Start the development server**:
+4. **Start the development server**:
    ```bash
    npm run dev
    ```
 
-6. **Open your browser**:
+5. **Open your browser**:
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## Project Structure
 
 ```
 e-Mess/
-├── web-app/                    # Next.js web application
-│   ├── src/
-│   │   ├── app/               # Next.js App Router pages
-│   │   │   ├── login/        # Authentication
-│   │   │   ├── cafeteria/    # Cafeteria management
-│   │   │   │   ├── page.tsx          # Dashboard
-│   │   │   │   ├── meals/            # Meal management
-│   │   │   │   ├── scheduling/       # Scheduling interface
-│   │   │   │   ├── budget/           # Budget planning
-│   │   │   │   └── analytics/        # Analytics
-│   │   │   ├── university/   # University insights
-│   │   │   └── admin/        # Admin panel
-│   │   ├── components/       # React components
-│   │   │   ├── ui/          # Reusable UI components
-│   │   │   └── layout/      # Layout components
-│   │   ├── lib/             # Utilities and services
-│   │   │   ├── api.ts      # API client
-│   │   │   └── auth.ts     # Authentication
-│   │   └── types/           # TypeScript definitions
-│   ├── public/              # Static assets
-│   ├── package.json         # Dependencies
-│   ├── next.config.js       # Next.js config
-│   ├── tailwind.config.js   # Tailwind config
-│   └── tsconfig.json        # TypeScript config
+├── src/
+│   ├── app/                   # Next.js App Router pages
+│   │   ├── login/            # Authentication
+│   │   ├── cafeteria/        # Cafeteria management
+│   │   │   ├── page.tsx              # Dashboard
+│   │   │   ├── meals/                # Meal management
+│   │   │   ├── scheduling/           # Scheduling interface
+│   │   │   ├── budget/               # Budget planning
+│   │   │   └── analytics/            # Analytics
+│   │   ├── university/       # University insights
+│   │   └── admin/            # Admin panel
+│   ├── components/           # React components
+│   │   ├── ui/              # Reusable UI components
+│   │   └── layout/          # Layout components
+│   ├── lib/                 # Utilities and services
+│   │   ├── api.ts          # API client
+│   │   └── auth.ts         # Authentication
+│   └── types/               # TypeScript definitions
+├── public/                  # Static assets
+├── .env.local              # Environment variables
 ├── .gitignore
-└── README.md
+├── README.md
+├── package.json            # Dependencies
+├── next.config.js          # Next.js config
+├── tailwind.config.js      # Tailwind config
+└── tsconfig.json           # TypeScript config
 ```
 
 ## User Roles and Access
@@ -194,8 +189,6 @@ e-Mess/
 - **Permissions**: System health monitoring, database management, and API overview
 
 ## Available Scripts
-
-In the `web-app` directory:
 
 - `npm run dev` - Start development server
 - `npm run build` - Build production bundle
@@ -273,7 +266,6 @@ Fully responsive interface supporting:
 
 1. **Build the application**:
    ```bash
-   cd web-app
    npm run build
    ```
 
