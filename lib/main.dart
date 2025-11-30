@@ -1,27 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'models/meal.dart';
+import 'providers/meal_provider.dart';
+import 'screens/confirmation_screen.dart';
+import 'routes.dart';
+import 'widgets/qr_scanner_modal.dart';
+import 'widgets/app_drawer.dart';
 
-// The main function is the starting point for all our Flutter apps.
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MealProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'e-Mess',
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        fontFamily: 'NunitoSans',
+      ),
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.getRoutes(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final categories = ['breakfast', 'lunch', 'tea', 'supper'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-        length: 4,
-        vsync:
-            this); // You can change the length as per the number of tabs you have
+    _tabController = TabController(length: 4, vsync: this);
+    // Fetch meals when the app starts
+    Future.microtask(() => context.read<MealProvider>().fetchMeals());
   }
 
   @override
@@ -29,2673 +57,240 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     _tabController.dispose();
     super.dispose();
   }
+  @override
+  Widget build(BuildContext context) {    
+    return Scaffold(      
+      drawer: const AppDrawer(),
+      appBar: AppBar(
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.account_circle_rounded, color: Colors.deepOrange),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            );
+          },
+        ),
+        title: const Text(
+          "e-Mess",
+          style: TextStyle(
+            fontFamily: 'BungeeSpice',
+            color: Colors.deepOrange,
+            fontSize: 30.0,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.tealAccent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.deepOrange),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => const QRScannerModal(),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
+            child: LinearProgressIndicator(
+              value: 0.25,
+              minHeight: 8.0,
+              color: Colors.deepOrange,
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.teal,
+            labelColor: Colors.deepOrange,
+            labelStyle: const TextStyle(
+              fontFamily: 'TiltNeon',
+              fontWeight: FontWeight.bold,
+            ),
+            tabs: const [
+              Tab(text: 'Breakfast'),
+              Tab(text: '  Lunch  '),
+              Tab(text: '4pm Tea'),
+              Tab(text: 'Supper'),
+            ],
+          ),
+          Expanded(
+            child: Consumer<MealProvider>(
+              builder: (context, mealProvider, child) {
+                if (mealProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (mealProvider.error.isNotEmpty) {
+                  return Center(child: Text(mealProvider.error));
+                }
+
+                return TabBarView(
+                  controller: _tabController,
+                  children: categories.map((category) {
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: MealCategoryGrid(category: category),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+          // Confirm order button - outside TabBarView to remain static
+          Consumer<MealProvider>(
+            builder: (context, mealProvider, _) {
+              final selectedMeals = mealProvider.getSelectedMeals();
+              return Container(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    minimumSize: const Size(double.infinity, 60),
+                  ),
+                  onPressed: selectedMeals.isEmpty ? null : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ConfirmationScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    'Confirm Order (${selectedMeals.length})',
+                    style: const TextStyle(
+                      fontFamily: 'BungeeSpice',
+                      color: Colors.deepOrange,
+                      fontSize: 20.0,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MealCategoryGrid extends StatelessWidget {
+  final String category;
+
+  const MealCategoryGrid({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Builder(
-          builder: (context) => Scaffold(
-                appBar: AppBar(
-                  leading: Builder(
-                    builder: (BuildContext context) {
-                      return IconButton(
-                        icon: const Icon(
-                          Icons.account_circle_rounded,
-                          color: Colors.deepOrangeAccent,
-                          size: 30.0,
-                        ),
-                        onPressed: () {
-                          Scaffold.of(context).openDrawer();
-                        },
-                        tooltip: MaterialLocalizations.of(context)
-                            .openAppDrawerTooltip,
-                      );
-                    },
-                  ),
-                  title: const Text(
-                    "e-Mess",
-                    style: TextStyle(
-                      fontFamily: 'BungeeSpice',
-                      color: Colors.deepOrange,
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.bold,
+    return Consumer<MealProvider>(
+      builder: (context, mealProvider, _) {
+        final meals = mealProvider.getMealsByCategory(category);
+        
+        return GridView.builder(
+          padding: const EdgeInsets.all(8.0),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 0.75,
+            mainAxisSpacing: 8.0,
+            crossAxisSpacing: 8.0,
+          ),
+          itemCount: meals.length,
+          itemBuilder: (context, index) {
+            final meal = meals[index];
+            return MealCard(meal: meal);
+          },
+        );
+      },
+    );
+  }
+}
+
+class MealCard extends StatelessWidget {
+  final Meal meal;
+
+  const MealCard({super.key, required this.meal});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap: () {
+          context.read<MealProvider>().toggleMealSelection(meal.id);
+        },
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4.0),
+                      ),
+                      image: DecorationImage(
+                        image: AssetImage(meal.imageUrl),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  centerTitle: true,
-                  backgroundColor: Colors.tealAccent,
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.qr_code_scanner_rounded,
-                          color: Colors.deepOrange, size: 30.0),
-                      tooltip: 'scan QR Code',
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Scan QR Code'),
-                              content: const Text(
-                                  'You have selected to scan a QR code.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text('OK'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    )
-                  ],
                 ),
-                body: SafeArea(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 20.0, horizontal: 10.0),
-                        child: LinearProgressIndicator(
-                          value: 0.25,
-                          minHeight: 8.0,
-                          color: Colors.deepOrange,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      TabBar(
-                        indicatorColor: Colors.teal,
-                        labelColor: Colors.deepOrange,
-                        labelStyle: const TextStyle(
-                            fontFamily: 'TiltNeon',
-                            fontWeight: FontWeight.bold),
-                        controller: _tabController,
-                        tabs: const [
-                          Tab(text: 'Breakfast'),
-                          Tab(text: '  Lunch  '),
-                          Tab(text: '4pm Tea'),
-                          Tab(text: 'Supper')
-                        ],
-                      ),
-                      Expanded(
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: <Widget>[
-                            // Breakfast GridView/Tab
-                            Column(
-                              children: [
-                                Expanded(
-                                  child: GridView.count(
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 5.0,
-                                    crossAxisSpacing: 5.0,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/tea.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Tea',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                        'images/bread1.jpg',
-                                                        height: 30.0),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Bread',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 12',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/eggs.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Eggs',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/mandazi.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Mandazi',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/coffee.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Coffee',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 25',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/toast.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Toast',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(15.0),
-                                        bottom: Radius.circular(0.0)),
-                                    child: Container(
-                                      color: Colors.teal,
-                                      height: 80.0,
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Text(
-                                            'Confirm Order',
-                                            style: TextStyle(
-                                                fontFamily: 'BungeeSpice',
-                                                color: Colors.deepOrange,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 25.0),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-
-                            // Lunch GridView/Tab
-                            Column(
-                              children: [
-                                Expanded(
-                                  child: GridView.count(
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 10.0,
-                                    crossAxisSpacing: 10.0,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/ugali.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Ugali',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/rice.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Rice',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 30',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/ndengu.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Ndengu',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 35',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/madondo.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Madondo',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 25',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/beef.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Beef Stew',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 70',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/cabbage.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Cabbage',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/sukuma.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Sukumawiki',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 30',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/matumbo1.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Matumbo',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 65',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/pilau1.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Pilau',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 60',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(15.0),
-                                        bottom: Radius.circular(0.0)),
-                                    child: Container(
-                                      color: Colors.teal,
-                                      height: 80.0,
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Text(
-                                            'Confirm Order',
-                                            style: TextStyle(
-                                                fontFamily: 'BungeeSpice',
-                                                color: Colors.deepOrange,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 25.0),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-
-                            // 4pm Tea GridView/Tab
-                            Column(
-                              children: [
-                                Expanded(
-                                  child: GridView.count(
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 10.0,
-                                    crossAxisSpacing: 10.0,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/tea.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Tea',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/coffee.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Coffee',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 25',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/bread1.jpg',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Bread',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 12',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/eggs.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Eggs',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/mandazi.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Mandazi',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/toast.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Toast',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(15.0),
-                                        bottom: Radius.circular(0.0)),
-                                    child: Container(
-                                      color: Colors.teal,
-                                      height: 80.0,
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Text(
-                                            'Confirm Order',
-                                            style: TextStyle(
-                                                fontFamily: 'BungeeSpice',
-                                                color: Colors.deepOrange,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 25.0),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-
-                            // Supper GridView/Tab
-                            Column(
-                              children: [
-                                Expanded(
-                                  child: GridView.count(
-                                    crossAxisCount: 3,
-                                    mainAxisSpacing: 10.0,
-                                    crossAxisSpacing: 10.0,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/ugali.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Ugali',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 15',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/rice.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Rice',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 30',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/chapati.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Chapati',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/madondo.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Madondo',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 25',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/ndengu.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Ndengu',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 35',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/cabbage.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Cabbage',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 20',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/sukuma.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Sukumawiki',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 30',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/beef.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Beef Stew',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 70',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/matumbo1.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Matumbo',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 50',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {},
-                                        style: TextButton.styleFrom(
-                                          padding: EdgeInsets
-                                              .zero, // Set padding to zero
-                                        ),
-                                        child: Card(
-                                          child: Column(
-                                            children: [
-                                              SizedBox(
-                                                height: 90.0,
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(3.0),
-                                                  child: ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15.0),
-                                                    child: Image.asset(
-                                                      'images/pilau1.png',
-                                                      height: 30.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              const Expanded(
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          EdgeInsets.fromLTRB(
-                                                              8.0,
-                                                              0.0,
-                                                              16.0,
-                                                              0.0),
-                                                      child: Text(
-                                                        'Pilau',
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              'DancingScript',
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          fontSize: 18.0,
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                              const Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.fromLTRB(8.0,
-                                                            0.0, 16.0, 0.0),
-                                                    child: Text(
-                                                      'Ksh. 60',
-                                                      style: TextStyle(
-                                                          fontFamily:
-                                                              'NunitoSans',
-                                                          color:
-                                                              Colors.deepOrange,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 8.5),
-                                                    ),
-                                                  )
-                                                ],
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(15.0),
-                                        bottom: Radius.circular(0.0)),
-                                    child: Container(
-                                      color: Colors.teal,
-                                      height: 80.0,
-                                      child: const Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Text(
-                                            'Confirm Order',
-                                            style: TextStyle(
-                                                fontFamily: 'BungeeSpice',
-                                                color: Colors.deepOrange,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 25.0),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                drawer: const Drawer(
-                  child: Center(
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text('This is the Drawer'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          meal.name,
+                          style: const TextStyle(
+                            fontFamily: 'DancingScript',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18.0,
+                          ),
+                        ),
+                        Text(
+                          'Ksh. ${meal.price.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            color: Colors.deepOrange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              )),
+              ],
+            ),
+            if (meal.isSelected)
+              Positioned(
+                top: 8.0,
+                right: 8.0,
+                child: Container(
+                  padding: const EdgeInsets.all(2.0),
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: Colors.white,
+                    size: 20.0,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
