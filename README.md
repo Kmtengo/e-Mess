@@ -17,3 +17,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development and a full API reference.
+
+## Design Language
+
+For detailed information about the app's design system, including color palette, typography, components, and UI patterns, please refer to the [Design Language Specification](DESIGN_LANGUAGE.md).
