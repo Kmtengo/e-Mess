@@ -79,3 +79,10 @@ lib/
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development and a full API reference.
+
+## Design Language
+
+For detailed information about the app's design system, including color palette, typography, components, and UI patterns, please refer to the [Design Language Specification](DESIGN_LANGUAGE.md).
